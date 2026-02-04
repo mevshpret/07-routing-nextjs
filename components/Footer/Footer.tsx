@@ -1,31 +1,19 @@
-import React from "react";
-import { FiMail, FiCode } from "react-icons/fi";
+// components/Footer/Footer.tsx
 import css from "./Footer.module.css";
 
-const Footer = () => {
+export default function Footer() {
   return (
     <footer className={css.footer}>
       <div className={css.content}>
-        <p className={css.copy}>
-          © {new Date().getFullYear()} NoteHub. All rights reserved.
-        </p>
+        <p>© {new Date().getFullYear()} NoteHub. All rights reserved.</p>
         <div className={css.wrap}>
-          <p className={css.dev}>
-            <FiCode className={css.icon} /> Developer: Anastasia Saienko
-          </p>
-          <p className={css.contact}>
-            <FiMail className={css.icon} /> Contact us:{" "}
-            <a
-              className={css.email}
-              href="mailto:anastasiasaienko634@gmail.com"
-            >
-              anastasiasaienko634@gmail.com
-            </a>
+          <p>Developer: Oleksandr Zabolotny</p>
+          <p>
+            Contact us:{" "}
+            <a href="mailto:student@notehub.app">student@notehub.app</a>
           </p>
         </div>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

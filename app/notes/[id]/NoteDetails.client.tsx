@@ -1,46 +1,93 @@
+// app/notes/[id]/NoteDetails.client.tsx
 "use client";
-import { fetchNoteById } from "@/lib/api";
+
+import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
+
+import { fetchNoteById } from "@/lib/api";
+import type { Note } from "@/types/note";
+
 import css from "./NoteDetails.module.css";
-import { useRouter } from "next/navigation";
-const NoteDetails = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
+
+interface NoteDetailsProps {
+  id?: string;
+}
+
+export default function NoteDetailsClient({ id }: NoteDetailsProps) {
+  const params = useParams();
+  const router = useRouter();
+
+  // id з пропів або з URL
+  const routeRawId = params?.id;
+  const rawId = id ?? routeRawId;
+  const finalId = Array.isArray(rawId) ? rawId[0] : rawId;
+
+  const {
+    data: note,
+    isLoading,
+    isError,
+  } = useQuery<Note, Error>({
+    queryKey: ["note", finalId],
+    queryFn: () => fetchNoteById(finalId as string),
+    enabled: typeof finalId === "string",
     refetchOnMount: false,
   });
 
-  const router = useRouter();
+  if (!finalId) {
+    return <p>Note id is missing</p>;
+  }
 
-  const handleClick = () => {
-    router.back();
-  };
-
-  const formattedDate = data
-    ? data.updatedAt
-      ? `Updated at: ${data.updatedAt}`
-      : `Created at: ${data.createdAt}`
-    : "";
-
-  if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage />;
-  if (!data) return null;
-  return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <button onClick={handleClick}>Go Back</button>
-          <h2>{data.title}</h2>
+  if (isLoading) {
+    return (
+      <main className={css.main}>
+        <div className={css.container}>
+          <p className={css.content}>Loading, please wait...</p>
         </div>
-        <p className={css.content}>{data.content}</p>
-        <p className={css.date}>{formattedDate}</p>
-      </div>
-    </div>
-  );
-};
+      </main>
+    );
+  }
 
-export default NoteDetails;
+  if (isError || !note) {
+    return (
+      <main className={css.main}>
+        <div className={css.container}>
+          <p className={css.content}>Something went wrong.</p>
+          <button
+            type="button"
+            className={css.backBtn}
+            onClick={() => router.back()}
+          >
+            Back
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className={css.main}>
+      <div className={css.container}>
+        <button
+          type="button"
+          className={css.backBtn}
+          onClick={() => router.back()}
+        >
+          Back
+        </button>
+
+        <div className={css.item}>
+          <div className={css.header}>
+            <h2>{note.title}</h2>
+            {note.tag && <span className={css.tag}>{note.tag}</span>}
+          </div>
+
+          <p className={css.content}>{note.content}</p>
+
+          <p className={css.date}>
+            {new Date(note.createdAt).toLocaleString()}
+          </p>
+        </div>
+      </div>
+    </main>
+  );
+}

@@ -1,68 +1,69 @@
 "use client";
-import css from "./page.module.css";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import NoteList from "@/components/NoteList/NoteList";
-import Modal from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
-import { Toaster } from "react-hot-toast";
-import Pagination from "@/components/Pagination/Pagination";
-import { useState } from "react";
-import SearchBox from "@/components/SearchBox/SearchBox";
-import { useDebounce } from "use-debounce";
 
-interface NotesProps {
-  tag?: string;
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+
+import { fetchNotes, type FetchNotesResponse } from "@/lib/api";
+import type { Note } from "@/types/note";
+
+import SearchBox from "@/components/SearchBox/SearchBox";
+import Pagination from "@/components/Pagination/Pagination";
+import NoteList from "@/components/NoteList/NoteList";
+import css from "../../NotesPage.module.css";
+
+const PER_PAGE = 10;
+
+interface NotesClientProps {
+  tag: string;
 }
 
-const Notes = ({ tag }: NotesProps) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [debounceTerm] = useDebounce(query, 500);
-  const [currentPage, setCurrentPage] = useState(1);
+export default function NotesClient({ tag }: NotesClientProps) {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const onOpen = () => setIsModalOpen(true);
-  const onClose = () => setIsModalOpen(false);
-  const { error, data, isLoading, isSuccess } = useQuery({
-    queryKey: ["notes", debounceTerm, currentPage, tag],
-    queryFn: () => fetchNotes(debounceTerm, currentPage, tag),
-    placeholderData: keepPreviousData,
+  const normalizedTag = tag === "all" ? undefined : tag;
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+
+    return () => window.clearTimeout(id);
+  }, [search]);
+
+  const { data, isLoading, isError } = useQuery<FetchNotesResponse, Error>({
+    queryKey: ["notes", { page, search: debouncedSearch, tag: normalizedTag }],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        perPage: PER_PAGE,
+        search: debouncedSearch,
+        tag: normalizedTag,
+      }),
+    refetchOnMount: false,
   });
 
-  const onChange = (value: string) => {
-    setQuery(value);
-    setCurrentPage(1);
-  };
+  const notes: Note[] = data?.notes ?? [];
+  const totalPages: number = data?.totalPages ?? 1;
+
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Failed to load notes.</p>;
 
   return (
-    <div className={css.app}>
-      <Toaster position="top-right" />
+    <>
+      <SearchBox value={search} onChange={setSearch} />
 
-      <header className={css.toolbar}>
-        <SearchBox onChange={onChange} value={query} />
-        {isSuccess && data.totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            total_pages={data.totalPages}
-          />
-        )}
-        <button className={css.button} onClick={onOpen}>
-          Create note +
-        </button>
-      </header>
-      {isLoading && <Loader />}
-      {error && <ErrorMessage />}
-      {data && data?.notes.length > 0 && <NoteList notes={data.notes} />}
-      {isModalOpen && (
-        <Modal onClose={onClose}>
-          <NoteForm onClose={onClose} />
-        </Modal>
-      )}
-    </div>
+      {/* тепер це Link на маршрут створення */}
+      <Link href="/notes/action/create" className={css.button}>
+        Create note +
+      </Link>
+
+      <NoteList notes={notes} detailsBasePath={`/notes/filter/${tag}`} />
+
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+    </>
   );
-};
-
-export default Notes;
+}

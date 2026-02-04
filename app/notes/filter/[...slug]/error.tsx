@@ -1,20 +1,24 @@
+// app/notes/filter/[...slug]/error.tsx
 "use client";
 
-interface ErrorProps {
-  error: Error;
+interface FilterErrorProps {
+  error: Error & { digest?: string };
   reset: () => void;
 }
 
-const Error = ({ error, reset }: ErrorProps) => {
-  console.error(error);
-
+export default function FilterError({ error, reset }: FilterErrorProps) {
   return (
-    <div>
-      <p>Whoops... something went wrong!</p>
+    <div style={{ padding: "24px" }}>
+      <h2>Something went wrong while loading filtered notes 😢</h2>
       <p>{error.message}</p>
-      <button onClick={reset}>Reset</button>
+
+      <button
+        type="button"
+        onClick={() => reset()}
+        style={{ marginTop: "12px" }}
+      >
+        Try again
+      </button>
     </div>
   );
-};
-
-export default Error;
+}
