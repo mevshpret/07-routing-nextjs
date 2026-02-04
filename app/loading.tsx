@@ -1,5 +1,5 @@
-import Loader from "@/components/Loader/Loader";
-
-export default function LoadingNotes() {
-  return <Loader />;
+const Loading = () => {
+  return <p>Loading, please wait...</p>;
 }
+
+export default Loading;

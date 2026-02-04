@@ -1,61 +1,50 @@
-import api from "./api/axios";
-import type { Note } from "@/types/note";
+import axios from 'axios';
+import type { Note } from '../types/note';
 
-export interface PaginatedNotesResponse {
-  notes: Note[];
-  totalPages: number;
+const BASE_URL = 'https://notehub-public.goit.study/api';
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+
+export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
+
+export interface CreateNoteInput {
+  title: string;
+  content: string;
+  tag: NoteTag;
 }
 
-export interface NotesQueryParams {
-  q?: string;
-  page?: number;
-  tag?: string; // если выбран "All" — не передаём вовсе
+function getAuthHeaders() {
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export type CreateNotePayload = Pick<Note, "title" | "content" | "tag">;
-export type UpdateNotePayload = Partial<
-  Pick<Note, "title" | "content" | "tag">
->;
-
-/** Список заметок (с пагинацией и фильтром по тегу) */
-export async function fetchNotes(
-  params: NotesQueryParams = {},
-): Promise<PaginatedNotesResponse> {
-  const { q, page, tag } = params;
-  const qs: Record<string, string | number | undefined> = {
-    q,
-    page,
-    ...(tag ? { tag } : {}),
-  };
-  const { data } = await api.get<PaginatedNotesResponse>("/notes", {
-    params: qs,
-  });
-  return data;
+export function fetchNotes(page: number, perPage: number, search?: string, tag?: string) {
+  return axios
+    .get<{ notes: Note[]; totalPages: number }>(`${BASE_URL}/notes`, {
+      headers: getAuthHeaders(),
+      params: { page, perPage, ...(search ? { search } : {}), ...(tag ? { tag } : {}) },
+    })
+    .then(res => res.data);
 }
 
-/** Детали заметки */
+export function createNote(data: CreateNoteInput) {
+  return axios
+    .post<Note>(`${BASE_URL}/notes`, data, { headers: getAuthHeaders() })
+    .then(res => res.data);
+}
+
+export function deleteNote(id: string): Promise<Note> {
+  return axios
+    .delete<Note>(`${BASE_URL}/notes/${id}`, {
+      headers: getAuthHeaders(),
+    })
+    .then(res => res.data);
+}
+
 export async function fetchNoteById(id: string): Promise<Note> {
-  const { data } = await api.get<Note>(`/notes/${id}`);
-  return data;
+  const response = await axios.get<Note>(`${BASE_URL}/notes/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  return response.data;
 }
 
-/** Создание заметки */
-export async function createNote(payload: CreateNotePayload): Promise<Note> {
-  const { data } = await api.post<Note>("/notes", payload);
-  return data;
-}
 
-/** Обновление заметки (PATCH, не PUT) */
-export async function updateNote(
-  id: string,
-  patch: UpdateNotePayload,
-): Promise<Note> {
-  const { data } = await api.patch<Note>(`/notes/${id}`, patch);
-  return data;
-}
 
-/** Удаление заметки — возвращаем удалённый объект */
-export async function deleteNote(id: string): Promise<Note> {
-  const { data } = await api.delete<Note>(`/notes/${id}`);
-  return data;
-}

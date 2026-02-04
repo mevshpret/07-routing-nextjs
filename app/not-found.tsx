@@ -1,12 +1,12 @@
-import styles from "./NotFound.module.css";
+import css from './page.module.css';
 
-export default function NotFound() {
-  return (
-    <main className={styles.container}>
-      <h1 className={styles.title}>404 - Page not found</h1>
-      <p className={styles.description}>
-        Sorry, the page you are looking for does not exist.
-      </p>
-    </main>
-  );
+const notFound = () => {
+    return (
+        <div>
+          <h1 className={css.title}>404 - Page not found</h1>
+          <p className={css.description}>Sorry, the page you are looking for does not exist.</p>
+        </div>
+ );
 }
+
+export default notFound;

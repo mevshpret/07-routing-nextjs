@@ -1,46 +1,40 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { fetchNoteById } from "@/lib/api";
-import type { Note } from "@/types/note";
-import { formatDateUTC } from "@/lib/format";
-import css from "../NoteDetails.module.css";
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
+import { fetchNoteById } from '@/lib/api';
+import type { Note } from '@/types/note';
+import css from './NoteDetails.module.css';
 
-export default function NoteDetailsClient({ id }: { id: string }) {
-  const router = useRouter();
+export default function NoteDetailsClient() {
+  const { id } = useParams<{ id: string }>();
 
-  const {
-    data: note,
-    isLoading,
-    isError,
-    error,
-  } = useQuery<Note>({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id), // id строка
+  const { data: note, isLoading, isError } = useQuery<Note>({
+    queryKey: ['note', id],
+    queryFn: () => fetchNoteById(id),
+    enabled: !!id,
     refetchOnMount: false,
-    retry: false,
   });
 
   if (isLoading) return <p>Loading, please wait...</p>;
-  if (isError)
-    return <p>Could not fetch note details. {(error as Error).message}</p>;
-  if (!note) return <p>Note not found.</p>;
+  if (isError || !note) return <p>Something went wrong.</p>;
 
   return (
     <div className={css.container}>
-      <div className={css.item}>
-        <button className={css.backBtn} onClick={() => router.back()}>
-          ← Back
-        </button>
-        <div className={css.header}>
+	   <div className={css.item}>
+	      <div className={css.header}>
           <h2>{note.title}</h2>
-          <span className={css.tag} title={note.tag}>
-            {note.tag}
-          </span>
-        </div>
+	      </div>
         <p className={css.content}>{note.content}</p>
-        <p className={css.date}>{formatDateUTC(note.createdAt)}</p>
+        <p className={css.date}>
+          {new Date(note.createdAt).toLocaleString('en', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </p>
       </div>
     </div>
   );

@@ -1,28 +1,18 @@
-"use client";
+'use client';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-export default function TanStackProvider({
-  children,
-}: {
+interface TanStackProviderProps {
   children: ReactNode;
-}) {
-  // стабильный QueryClient на клиентах
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // типичные настройки для нашего проекта
-            refetchOnWindowFocus: false,
-            retry: 1,
-          },
-        },
-      }),
-  );
+}
+
+export default function TanStackProvider({ children }: TanStackProviderProps) {
+  const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
   );
 }

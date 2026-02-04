@@ -1,90 +1,127 @@
-"use client";
+import { Formik, Form, Field, ErrorMessage, type FormikHelpers } from 'formik';
+import * as Yup from 'yup';
+import css from './NoteForm.module.css';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createNote } from '../../lib/api';
 
-import { useState } from "react";
-import type { CreateNotePayload } from "@/lib/api";
-import css from "./NoteForm.module.css";
 
-const TAGS = ["Todo", "Work", "Personal", "Idea", "Other"];
 
-export interface NoteFormProps {
-  onSuccess: (payload: CreateNotePayload) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
-  errorMsg?: string;
+interface NoteFormValues {
+  title: string;
+  content: string;
+  tag: 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 }
 
-export default function NoteForm({
-  onSuccess,
-  onCancel,
-  isSubmitting,
-  errorMsg,
-}: NoteFormProps) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tag, setTag] = useState("Todo");
+interface NoteFormProps {
+  onClose: () => void;
+}
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    onSuccess({ title: title.trim(), content: content.trim(), tag });
-  }
+const initialValues: NoteFormValues = {
+  title: '',
+  content: '',
+  tag: 'Todo',
+};
+
+const validationSchema = Yup.object({
+  title: Yup.string()
+    .min(3, 'Мінімум 3 символи')
+    .max(50, 'Максимум 50 символів')
+    .required('Обов’язкове поле'),
+  content: Yup.string().max(500, 'Максимум 500 символів'),
+  tag: Yup.string()
+    .oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'])
+    .required('Обов’язкове поле'),
+});
+
+export default function NoteForm({ onClose }: NoteFormProps) {
+  const queryClient = useQueryClient();
+  
+
+  const createMutation = useMutation({
+    mutationFn: createNote,
+   onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['notes'] });
+  onClose();
+}
+  });
+
+  const handleSubmit = (
+    values: NoteFormValues,
+    helpers: FormikHelpers<NoteFormValues>
+  ) => {
+    createMutation.mutate(values, {
+      onSuccess: () => {
+        helpers.resetForm();
+      },
+    });
+  };
 
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
-      <div className={css.formGroup}>
-        <label htmlFor="title">Title</label>
-        <input
-          id="title"
-          className={css.input}
-          placeholder="Enter title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          autoFocus
-        />
-      </div>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      {({ resetForm }) => (
+        <Form className={css.form}>
+          <div className={css.formGroup}>
+            <label htmlFor="title">Title</label>
+            <Field id="title" name="title" className={css.input} />
+            <ErrorMessage name="title">
+              {msg => <span className={css.error}>{msg}</span>}
+            </ErrorMessage>
+          </div>
 
-      <div className={css.formGroup}>
-        <label htmlFor="content">Content</label>
-        <textarea
-          id="content"
-          className={css.textarea}
-          placeholder="Enter content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-        />
-      </div>
+          <div className={css.formGroup}>
+            <label htmlFor="content">Content</label>
+            <Field
+              as="textarea"
+              id="content"
+              name="content"
+              rows={8}
+              className={css.textarea}
+            />
+            <ErrorMessage name="content">
+              {msg => <span className={css.error}>{msg}</span>}
+            </ErrorMessage>
+          </div>
 
-      <div className={css.formGroup}>
-        <label htmlFor="tag">Tag</label>
-        <select
-          id="tag"
-          className={css.select}
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        >
-          {TAGS.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </div>
+          <div className={css.formGroup}>
+            <label htmlFor="tag">Tag</label>
+            <Field as="select" id="tag" name="tag" className={css.select}>
+              <option value="Todo">Todo</option>
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+              <option value="Meeting">Meeting</option>
+              <option value="Shopping">Shopping</option>
+            </Field>
+            <ErrorMessage name="tag">
+              {msg => <span className={css.error}>{msg}</span>}
+            </ErrorMessage>
+          </div>
 
-      {errorMsg && <p className={css.error}>{errorMsg}</p>}
+          <div className={css.actions}>
+            <button
+              type="button"
+              className={css.cancelButton}
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+            >
+              Cancel
+            </button>
 
-      <div className={css.actions}>
-        <button type="button" className={css.cancelButton} onClick={onCancel}>
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className={css.submitButton}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Creating..." : "Create"}
-        </button>
-      </div>
-    </form>
+            <button
+              type="submit"
+              className={css.submitButton}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? 'Creating...' : 'Create note'}
+            </button>
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 }

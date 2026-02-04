@@ -1,4 +1,2 @@
-// Рендерить ничего, когда модалка не активна
-export default function ModalSlotDefault() {
-  return null;
-}
+const Default = () => null
+export default Default
