@@ -1,41 +1,41 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import { Roboto } from "next/font/google";
-
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const roboto = Roboto({
+import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
+import TanStackProvider from "../components/TanStackProvider/TanStackProvider";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-roboto",
-  display: "swap",
 });
 
-const siteUrl = "https://notehub.vercel.app";
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "NoteHub",
-  description: "NoteHub is an app for creating and managing personal notes.",
-  openGraph: {
-    title: "NoteHub",
-    description: "NoteHub is an app for creating and managing personal notes.",
-    url: siteUrl,
-    images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
-  },
+  description: "Simple note-taking app",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={roboto.variable}>
-      <body>
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <TanStackProvider>
           <Header />
-          {children}
+          <main className="rootMain">{children}</main>
           <Footer />
+          {modal}
         </TanStackProvider>
       </body>
     </html>

@@ -1,11 +1,5 @@
-// app/notes/[id]/error.tsx
 "use client";
 
-interface NoteDetailsErrorProps {
-  error: Error & { digest?: string };
-  reset: () => void;
-}
-
-export default function NoteDetailsError({ error }: NoteDetailsErrorProps) {
+export default function NoteDetailsError({ error }: { error: Error }) {
   return <p>Could not fetch note details. {error.message}</p>;
 }

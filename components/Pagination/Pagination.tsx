@@ -1,34 +1,27 @@
-// components/Pagination/Pagination.tsx
-"use client";
-
-import css from "./Pagination.module.css";
+import styles from './Pagination.module.css';
+import ReactPaginate from "react-paginate";
 
 interface PaginationProps {
-  page: number;
-  totalPages: number;
-  onChange: (nextPage: number) => void;
+  pageCount: number;
+  currentPage: number;
+  onPageChange: (page: number) => void;
 }
 
-export default function Pagination({
-  page,
-  totalPages,
-  onChange,
-}: PaginationProps) {
-  if (totalPages <= 1) return null;
-
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
+export default function Pagination({ pageCount, currentPage, onPageChange }: PaginationProps) {
   return (
-    <ul className={css.pagination}>
-      {pages.map((p) => (
-        <li
-          key={p}
-          className={p === page ? css.active : undefined}
-          onClick={() => onChange(p)}
-        >
-          <a>{p}</a>
-        </li>
-      ))}
-    </ul>
+    <ReactPaginate
+  pageCount={pageCount}
+  forcePage={currentPage - 1}
+  previousLabel="<"
+  nextLabel=">"
+  onPageChange={(e) => onPageChange(e.selected + 1)}
+  containerClassName={styles.pagination}       // контейнер пагінації
+  pageClassName={styles.page}                  // кожна сторінка
+  pageLinkClassName={styles.pageLink}          // лінк сторінки
+  previousClassName={styles.previous}          // кнопка попередньої
+  nextClassName={styles.next}                  // кнопка наступної
+  activeClassName={styles.active}             // активна сторінка
+  disabledClassName={styles.disabled}         // відключена кнопка
+/>
   );
 }

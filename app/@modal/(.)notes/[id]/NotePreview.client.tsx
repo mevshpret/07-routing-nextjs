@@ -1,51 +1,66 @@
 "use client";
-import { fetchNoteById } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
-import Loader from "@/components/Loader/Loader";
-import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
-import css from "./NotePreview.module.css";
+
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import Modal from "@/components/Modal/Modal";
-const NotePreview = () => {
+import { fetchNoteById } from "@/lib/api";
+import type { Note } from "@/types/note";
+
+type Props = {
+  noteId: string;
+};
+
+export default function NotePreviewClient({ noteId }: Props) {
   const router = useRouter();
-  const { id } = useParams<{ id: string }>();
-  console.log(id);
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
+
+  const {
+    data: note,
+    isLoading,
+    isError,
+  } = useQuery<Note>({
+    queryKey: ["note", noteId],
+    queryFn: () => fetchNoteById(noteId),
     refetchOnMount: false,
   });
 
-  const handleClick = () => {
-    router.back();
-  };
-
-  const formattedDate = data
-    ? data.updatedAt
-      ? `Updated at: ${data.updatedAt}`
-      : `Created at: ${data.createdAt}`
-    : "";
-
-  if (isLoading) return <Loader />;
-  if (isError) return <ErrorMessage />;
-  if (!data) return null;
   return (
-    <Modal onClose={handleClick}>
-      <div className={css.container}>
-        <div className={css.item}>
-          <div className={css.header}>
-            <button onClick={handleClick} className={css.backBtn}>
-              Go Back
-            </button>
-            <h2>{data.title}</h2>
-          </div>
-          <p className={css.content}>{data.content}</p>
-          <p className={css.date}>{formattedDate}</p>
+    <Modal onClose={() => router.back()}>
+      {/* Кнопка закриття */}
+      <button
+        onClick={() => router.back()}
+        style={{
+          position: "absolute",
+          top: 12,
+          right: 12,
+          fontSize: 18,
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+        }}
+        aria-label="Close modal"
+      >
+        ×
+      </button>
+
+      {isLoading && <p>Loading note...</p>}
+      {isError && <p>Error loading note.</p>}
+
+      {note && (
+        <div>
+          <h2>{note.title}</h2>
+
+          <p>{note.content}</p>
+
+          <p>
+            <strong>Tag:</strong> {note.tag}
+          </p>
+
+          <p>
+            <strong>Created:</strong>{" "}
+            {new Date(note.createdAt).toLocaleString()}
+          </p>
         </div>
-      </div>
+      )}
     </Modal>
   );
-};
-
-export default NotePreview;
+}

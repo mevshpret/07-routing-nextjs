@@ -1,60 +1,36 @@
-# NoteHub — Advanced Routing (Next.js App Router)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## 📌 Description
-A Next.js (App Router) application focused on advanced routing patterns.
-The project demonstrates parallel routes, catch-all routes, intercepted routes for modals, and proper handling of not-found pages, while working with server-side and client-side rendering.
+## Getting Started
 
-## 🚀 Demo
-https://07-routing-nextjs-wzfs.vercel.app/
+First, run the development server:
 
-## 🛠 Tech Stack
-- Next.js (App Router)
-- TypeScript
-- React
-- CSS Modules
-- Axios
-- TanStack Query (React Query)
-- Prettier
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## 🧭 Routing Features
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### ❌ Not Found Page
-- Implemented a custom `not-found.tsx` page
-- Displays a user-friendly 404 message for non-existing routes
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### 🔀 Parallel Routes for Notes Filtering
-- Implemented parallel routes using `@sidebar`
-- Sidebar allows filtering notes by predefined tags
-- URL updates dynamically (`/notes/filter/{tag}`)
-- Content updates without full page reload
-- Special handling for `All notes` (no tag parameter sent to API)
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 📂 Catch-All Routes
-- Used catch-all routing for dynamic note filtering
-- Supports routes like:
-  - `/notes/filter/all`
-  - `/notes/filter/Work`
-  - `/notes/filter/Personal`
+## Learn More
 
-## 🪟 Modal Routes (Intercepted Routes)
-- Implemented modal preview for note details using intercepted routes
-- Opening `/notes/{id}` shows a modal instead of full page navigation
-- Background page remains visible and does not reload
-- Closing the modal returns the user to the previous route
+To learn more about Next.js, take a look at the following resources:
 
-## ⚙️ API Integration
-- Data fetching implemented via Axios
-- API logic separated into `lib/api`
-- Client-side state and requests managed with TanStack Query
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## 👤 My Contribution
-- Implemented advanced routing with App Router
-- Built parallel routes for tag-based filtering
-- Implemented intercepted routes for modal note preview
-- Added custom Not Found page
-- Integrated API requests with Axios and React Query
-- Ensured SSR and CSR behavior according to requirements
-- Deployed the application to Vercel
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## 📦 Deployment
-The project is deployed on Vercel.
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

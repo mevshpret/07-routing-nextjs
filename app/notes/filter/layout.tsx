@@ -1,25 +1,16 @@
-// app/notes/filter/layout.tsx
-import type { ReactNode } from "react";
-import LayoutNotes from "@/components/LayoutNotes/LayoutNotes";
-
-interface FilterLayoutProps {
-  children: ReactNode;
-  // робимо додаткові слоти НЕобов’язковими,
-  // щоб LayoutProps<"/notes/filter"> (тільки children)
-  // підходив під цей інтерфейс
-  modal?: ReactNode;
-  sidebar?: ReactNode;
-}
+import css from "@/app/notes/filter/LayoutNotes.module.css";
 
 export default function FilterLayout({
   children,
-  modal,
   sidebar,
-}: FilterLayoutProps) {
+}: {
+  children: React.ReactNode;
+  sidebar: React.ReactNode;
+}) {
   return (
-    <LayoutNotes sidebar={sidebar}>
-      {children}
-      {modal}
-    </LayoutNotes>
+    <div className={css.container}>
+      <aside className={css.sidebar}>{sidebar}</aside>
+      <main className={css.notesWrapper}>{children}</main>
+    </div>
   );
 }

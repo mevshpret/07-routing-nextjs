@@ -1,22 +1,19 @@
-// components/Header/Header.tsx
+import styles from "./Header.module.css";
 import Link from "next/link";
-import css from "./Header.module.css";
 
 export default function Header() {
   return (
-    <header className={css.header}>
-      <Link href="/" aria-label="Home">
+    <header className={styles.header}>
+      <Link href="/" aria-label="Home" className={styles.logo}>
         NoteHub
       </Link>
       <nav aria-label="Main Navigation">
-        <ul className={css.navigation}>
+        <ul className={styles.navigation}>
           <li>
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/notes/filter/all" className={css.link}>
-              Notes
-            </Link>
+            <Link href="/notes/filter/all">Notes</Link>
           </li>
         </ul>
       </nav>

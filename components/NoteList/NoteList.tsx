@@ -1,57 +1,44 @@
-// components/NoteList/NoteList.tsx
-"use client";
-
+import styles from "./NoteList.module.css";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import toast from "react-hot-toast";
+import { deleteNote } from "../../lib/api";
+import type { Note } from "../../types/note";
 
-import type { Note } from "@/types/note";
-import { deleteNote } from "@/lib/api";
-
-import css from "./NoteList.module.css";
-
-export interface NoteListProps {
+interface NoteListProps {
   notes: Note[];
-  detailsBasePath?: string; // залишаємо, але не обов'язково використовувати
 }
 
 export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Note deleted");
-    },
-    onError: () => {
-      toast.error("Failed to delete note");
-    },
+  const mutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notes"] }),
   });
 
   return (
-    <ul className={css.list}>
+    <ul className={styles.list}>
       {notes.map((note) => (
-        <li key={note.id} className={css.listItem}>
-          <h2 className={css.title}>{note.title}</h2>
+        <li key={note.id} className={styles.listItem}>
+          <div>
+            <h2 className={styles.title}>{note.title}</h2>
+            <p className={styles.content}>{note.content}</p>
+          </div>
 
-          <p className={css.content}>{note.content}</p>
-
-          <div className={css.footer}>
-            <span className={css.tag}>{note.tag}</span>
+          <div className={styles.footer}>
+            <span className={styles.tag}>{note.tag}</span>
 
             <div>
-              <Link href={`/notes/${note.id}`} className={css.link}>
+              <Link href={`/notes/${note.id}`} className={styles.link}>
                 View details
               </Link>
 
               <button
-                type="button"
-                className={css.button}
-                onClick={() => deleteMutation.mutate(note.id)}
-                disabled={deleteMutation.isPending}
+                className={styles.button}
+                onClick={() => mutation.mutate(note.id)}
+                disabled={mutation.isPending}
               >
-                Delete
+                {mutation.isPending ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>

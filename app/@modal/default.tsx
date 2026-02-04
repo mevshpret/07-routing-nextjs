@@ -1,5 +1,5 @@
-const Modal = () => {
-  return null;
-};
+// app/@modal/default.tsx
 
-export default Modal;
+export default function DefaultModalSlot() {
+  return null;
+}

@@ -1,31 +1,60 @@
 "use client";
 
-import type { Note } from "@/types/note";
-import css from "./NotePreview.module.css";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
+import { useRouter } from "next/navigation";
+import css from "@/components/NotePreview/NotePreview.module.css";
+import Modal from "@/components/Modal/Modal";
 
-interface NotePreviewProps {
-  note: Note;
-  onClose: () => void;
-}
+type Props = {
+  noteId: string;
+};
 
-export default function NotePreview({ note, onClose }: NotePreviewProps) {
+function NotePreviewContent({ noteId, onClose }:Props&{onClose:()=>void}) {
+const { data, isLoading, isError } = useQuery({
+    queryKey: ["note", noteId],
+    queryFn: () => fetchNoteById(noteId),
+  });
+
+  if (isLoading) {
+    return <p>Loading note...</p>;
+  }
+
+  if (isError || !data) {
+    return <p>Failed to load note.</p>;
+  }
+
   return (
-    <div className={css.wrapper}>
-      <div className={css.header}>
-        <h2 className={css.title}>{note.title}</h2>
-
+    <div className={css.container}>
+      <div className={css.item}>
         <button
-          type="button"
-          className={css.closeButton}
-          onClick={onClose}
-          aria-label="Close"
+          className={css.backBtn}
+          onClick={() => onClose()}
         >
-          ×
+          ← Back
         </button>
-      </div>
 
-      <p className={css.content}>{note.content}</p>
-      <p className={css.date}>{new Date(note.createdAt).toLocaleString()}</p>
+        <div className={css.header}>
+          <h2>{data.title}</h2>
+          {data.tag && <span className={css.tag}>{data.tag}</span>}
+        </div>
+
+        <p className={css.content}>{data.content}</p>
+
+        <p className={css.date}>
+          {new Date(data.createdAt).toLocaleDateString()}
+        </p>
+      </div>
     </div>
   );
+} 
+
+export default function NotePreview({ noteId }: Props) {
+  const router = useRouter();
+ 
+  const handleClose = () =>{router.back()}
+    return <Modal onClose={handleClose}>
+      <NotePreviewContent noteId={noteId} onClose={handleClose}/>
+        </Modal>
+ 
 }

@@ -1,69 +1,80 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-
-import { fetchNotes, type FetchNotesResponse } from "@/lib/api";
-import type { Note } from "@/types/note";
-
-import SearchBox from "@/components/SearchBox/SearchBox";
-import Pagination from "@/components/Pagination/Pagination";
+import styles from "@/app/notes/page.module.css";
+import { useState, useCallback } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
+import { useDebounce } from "use-debounce";
 import NoteList from "@/components/NoteList/NoteList";
-import css from "../../NotesPage.module.css";
+import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import type { FetchNotesResponse } from "@/types/noteApi";
 
-const PER_PAGE = 10;
+const PER_PAGE = 12;
 
-interface NotesClientProps {
-  tag: string;
-}
+type NotesClientProps = {
+  tag?: string;
+};
 
 export default function NotesClient({ tag }: NotesClientProps) {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debounced] = useDebounce(search, 500);
+  const [isModal, setIsModal] = useState(false);
 
-  const normalizedTag = tag === "all" ? undefined : tag;
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
 
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      setDebouncedSearch(search.trim());
-      setPage(1);
-    }, 300);
-
-    return () => window.clearTimeout(id);
-  }, [search]);
-
-  const { data, isLoading, isError } = useQuery<FetchNotesResponse, Error>({
-    queryKey: ["notes", { page, search: debouncedSearch, tag: normalizedTag }],
+  const notesQuery = useQuery({
+    queryKey: ["notes", page, debounced, tag],
     queryFn: () =>
       fetchNotes({
         page,
         perPage: PER_PAGE,
-        search: debouncedSearch,
-        tag: normalizedTag,
+        search: debounced,
+        tag,
       }),
-    refetchOnMount: false,
+    placeholderData: keepPreviousData,
   });
 
-  const notes: Note[] = data?.notes ?? [];
-  const totalPages: number = data?.totalPages ?? 1;
-
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Failed to load notes.</p>;
+  const data = notesQuery.data as FetchNotesResponse | undefined;
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
   return (
-    <>
-      <SearchBox value={search} onChange={setSearch} />
+    <div className={styles.app}>
+      <div className={styles.toolbar}>
+        <SearchBox value={search} onChange={handleSearchChange} />
 
-      {/* тепер це Link на маршрут створення */}
-      <Link href="/notes/action/create" className={css.button}>
-        Create note +
-      </Link>
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            pageCount={totalPages}
+            onPageChange={setPage}
+          />
+        )}
 
-      <NoteList notes={notes} detailsBasePath={`/notes/filter/${tag}`} />
+        <button className={styles.button} onClick={() => setIsModal(true)}>
+          Create note +
+        </button>
+      </div>
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-    </>
+      <main>
+        {notesQuery.isLoading && <p>Loading notes...</p>}
+        {notesQuery.isError && <p>Error loading notes.</p>}
+        {!notesQuery.isLoading && notes.length === 0 && <p>No notes found.</p>}
+        {notes.length > 0 && <NoteList notes={notes} />}
+      </main>
+
+      {isModal && (
+        <Modal onClose={() => setIsModal(false)}>
+          <NoteForm onClose={() => setIsModal(false)} />
+        </Modal>
+      )}
+    </div>
   );
 }
