@@ -1,38 +1,45 @@
 {
-  "name": "06-notehub-nextjs",
+  "name": "07-routing-nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "prepare": "husky install"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.90.11",
-    "@tanstack/react-query-devtools": "^5.91.1",
-    "axios": "^1.13.2",
-    "formik": "^2.4.9",
-    "next": "^16.0.8",
-    "normalize.css": "^8.0.1",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-icons": "^5.5.0",
-    "react-paginate": "^8.3.0",
-    "use-debounce": "^10.0.6",
-    "yup": "^1.7.1"
+    "@tanstack/react-query": "^5.85.5",
+    "axios": "^1.11.0",
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-paginate": "^8.3.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3",
     "@types/node": "^20",
-    "@types/react": "^19.2.11",
-    "@types/react-dom": "^19.2.3",
-    "@types/react-paginate": "^7.1.4",
-    "@types/yup": "^0.29.14",
-    "@vitejs/plugin-react": "^5.1.1",
-    "babel-plugin-react-compiler": "1.0.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.0.6",
-    "typescript": "^5.9.3",
-    "vite": "^7.2.4"
+    "eslint-config-next": "15.5.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
+    "prettier": "^3.6.2",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }
