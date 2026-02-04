@@ -1,8 +1,9 @@
 import styles from './Home.module.css';
 
-export default function HomePage() {
-  return {
-    <main>
+export const NoteForm = ({ onClose }: NoteFormProps) => {
+  return (
+    <form>
+      <main>
   <div className={styles.container}>
     <h1 className={styles.title}>Welcome to NoteHub</h1>
     <p className={styles.description}>
@@ -18,5 +19,6 @@ export default function HomePage() {
     </p>
   </div>
 </main>
-};
+    </form>
+  );
 }
